@@ -1,8 +1,11 @@
-# frozen_string_literal: true
-
 source "https://rubygems.org"
+ruby RUBY_VERSION
 
 gemspec
+
+group :plugins do
+  gem "jekyll-plantuml"
+end
 
 group :test do
   gem "html-proofer", "~> 3.18"

@@ -17,6 +17,12 @@ jobs:
       GEMS_PATH: ~/vendor/bundle
 
     steps:
+      - name: Update apt cache
+        run: sudo apt-get update
+
+      - name: Install PlantUML Support
+        run: sudo apt-get install -y graphviz plantuml
+
       - name: Checkout
         uses: actions/checkout@v2
         with:
