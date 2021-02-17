@@ -1,5 +1,5 @@
 ---
-title: "Understanding Compilation"
+title: "Compilation In Details"
 date: 2020-05-28
 categories: [Development,C++]
 tags: [cpp,preprocess,linker,compile]
@@ -10,7 +10,7 @@ mermaid: true
 
 ```mermaid
 graph LR
-    IN[/code.cpp/]==>PRE[[Preprocess]]-->|code.ii|CMP[[Compiler]]-->|code.s|ASM[[Assembler]]-->|code.o|LNK[[Linker]]==>OUT[/code.out/]
+    IN[/code.cpp/]==>PRE[[Preprocess]]-->|code.ii|CMP[[Compile]]-->|code.s|ASM[[ASsemble]]-->|code.o|LNK[[Link]]==>OUT[/code.out/]
 ```
 
 Stages:
@@ -42,7 +42,7 @@ After you run `g++` with `--save-temps` flag you will receive:
 * main.o - object file (code in ELF format);
 * main - executable file (code and runtime library in ELF format).
 
-To do these stages separately:
+To go through these stages separately:
 - Preprocess source file - `g++ -E <file>.cpp`
 - Compile - `g++ -S <file>.cpp`
 - Compile and assemble - `g++ -c <file>.cpp`
@@ -50,7 +50,10 @@ To do these stages separately:
 
 ## Preprocess
 
-While parsing C++ source file, the preprocessor will build a translation unit by inserting content in it when it finds an `#include` directive at the same time it'll stip out of code and the headers when it find conditional compilation blocks (`#if` macro clause) whose directive evaluates to `false`. At the same time it'll do some other tasks like macro replacement.
+Responsibility:
+* insert content to the translation unit when it finds `#include` directive;
+* stip out of code (headers) when it `#if` macro whose directive evaluates to false;
+* macro replacement.
 
 *hello-world.ii*
 ```
@@ -67,8 +70,6 @@ While parsing C++ source file, the preprocessor will build a translation unit by
 
 ## Compile
 
-### Overview
-
 Translate C++ code into assembler instructions:
 
 ```mermaid
@@ -78,41 +79,41 @@ graph LR
 
 *hello-world.s*
 ```asm
-	.file	"hello-world.cpp"
-	.text
-	.section	.rodata
-	.type	_ZStL19piecewise_construct, @object
-	.size	_ZStL19piecewise_construct, 1
+    .file    "hello-world.cpp"
+    .text
+    .section    .rodata
+    .type    _ZStL19piecewise_construct, @object
+    .size    _ZStL19piecewise_construct, 1
 ...
-	movq	%rax, %rdx
-	movq	_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_@GOTPCREL(%rip), %rax
-	movq	%rax, %rsi
-	movq	%rdx, %rdi
-	call	_ZNSolsEPFRSoS_E@PLT
-	movl	$0, %eax
+    movq    %rax, %rdx
+    movq    _ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_@GOTPCREL(%rip), %rax
+    movq    %rax, %rsi
+    movq    %rdx, %rdi
+    call    _ZNSolsEPFRSoS_E@PLT
+    movl    $0, %eax
 ...
 ```
-
-### Details
 
 Compiler comes apart into two parts:
 ```mermaid
    graph TD
       CMP[Compiler] ==> F[Frontend] & B[Backend]
 ```
-Frontend responsibilities:
+
+Frontend responsibility:
 * Preprocessing;
 * Lexical analyzing;
 * Syntax analyzing (build AST tree);
 * Semantic analyzing;
 * Build high-level IR.
 
-Backend responsibilities:
+Backend responsibility:
 * Optimize **HIR** (high-level IR);
 * Optimize **MIR** (mid-level IR);
 * Optimize **LIR** (low-level IR);
 * Code generating.
 
+Compiler workflow:
 ```mermaid
    graph LR
       PRE[Preprocess]-->|code.ii|Fr[Frontend]-->|HIR|O1[Optimization 1]-->|MIR|O2[Optimization 2]-->|LIR|O3[Optimization 3]-->CG[Code generation]
@@ -121,23 +122,42 @@ Backend responsibilities:
 Compiler translate code into IR (intermediate representation) to be able to optimize output for different platforms. There are three different types of IR (high, middle and low). On each level, compiler does specific optimization.
 
 There are three kinds of optimization:
-* Optimization 1 - machine-independent optimizations;
-* Optimization 2 - machine-dependent optimizations on virtual registers;
-* Optimization 3 - machine-dependent optimizations on physical registers.
+* Optimization 1 - machine-independent optimizations (HIR);
+* Optimization 2 - machine-dependent optimizations on virtual registers (MIR);
+* Optimization 3 - machine-dependent optimizations on physical registers (LIR).
+
+To be able to see dumps of processing the IR tree do next command:
+```bash
+$ g++ -O2 -fdump-tree-all code.cpp -c
+```
+To be able to see dumps of RTL-based (LIR) passes of compiler do next command:
+```bash
+$ g++ -O2 -fdump-rtl-all code.cpp -c
+```
+
+For more information about available options follow the [link](https://gcc.gnu.org/onlinedocs/gcc/).
 
 ## Assemble
 
-Translate assembler instructions to machine code.
+Responsibility:
+* Encode instructions written in assembler language into machine code;
+* Compose sections with code and data into binary format (e.g. ELF format) file;
+* Include DWARF (debug) information into binary file (if particular option present).
 
 ## Link
 
-Combine object files into one binary file.
+Responsibility:
+* Compose object modules into executable file or dynamic library;
+* Resolve inter-modules dependencies;
+* Checking for undefined reference errors or one definition rule violations.
+
+**Note:** Static library represents archive of object files and doesn't involve linking as process.
 
 For example:
 ```bash
-$ g++ -o c-app sum.o print.o c-main.o
+$ g++ sum.o print.o main.o -o app.x
 ```
-Will output `c-app` binary executable file.
+Will output `app.x` binary executable file.
 
 # Object file
 
@@ -176,3 +196,7 @@ To look at symbols and demangle their names:
 $ nm -C <file>.o
 ```
 
+To look the list of relocations:
+```bash
+$ readelf -r <file>.o
+```

@@ -60,7 +60,7 @@ $ nm -CD <file>
 Configuration file: **/etc/ld.so.conf**
 Configuration Commands : **ldconfig**
 
-The main purposes of configuration command are <u>processing configuration file</u> and <u>creating cache</u> to speed up loading of applications.
+The main purposes of configuration command are processing configuration file and creating cache to speed up loading of applications.
 
 There are two available ways to specify additional place of libraries:
 * Change configuration file;
@@ -78,7 +78,8 @@ To run particular executable and specify additional place of libraries use next 
 ```bash
 $ LD_LIBRARY_PATH=... <path-to-executable>
 ```
-To use this behavior for each user session you can export this environment variable in running script (e.g. ~/.bashrc).
+
+To use this behavior for each user session you can export this environment variable in running script (e.g. `$HOME/.bashrc`).
 
 ### Change rpath or runpath
 
@@ -106,3 +107,39 @@ LD_DEBUG=libs ldd cat
 ...
 ```
 The output of the command is also very useful for tracking performance problems for excessive dynamic loading.
+
+## Create
+
+### Static Library
+
+To compile application and link with two static libraries follow next commands:
+```bash
+$ gcc -c A.c
+$ gcc -c B.c
+$ ar cr libA.a A.o
+$ ar cr libB.a B.o
+$ gcc main.c -lA -lB -L.
+```
+
+Above commands do:
+* Create object file of library A;
+* Create object file of library B;
+* Create static libraries from these library object file;
+* Create executable file and link with two external static library `A` and `B`.
+
+### Dynamic Library
+
+To compile application and link with two dynamic libraries follow next commands:
+```bash
+$ gcc -c A.c -fPIC
+$ gcc -c B.c -fPIC
+$ gcc -shared A.o -o libA.so
+$ gcc -shared B.o -o libB.so
+$ gcc main.c -L. -lA -lB -Wl,-rpath,.
+```
+
+Above commands do:
+* Create object file of library A;
+* Create object file of library B;
+* Create dynamic libraries from these library object file;
+* Create executable file and link with two external dynamic library `A` and `B`.
