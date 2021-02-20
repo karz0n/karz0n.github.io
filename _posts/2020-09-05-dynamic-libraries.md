@@ -7,10 +7,12 @@ tags: [libs,linker,rpath,runpath,ld]
 
 ## Anatomy
 
+![image tooltip here]({{site.utl}}/assets/img/posts/PLT.png)
+
 Libraries in Linux
 * static
 * shared
-	* dynamic linking
+    * dynamic linking
 	* dynamic loading
 
 **Static libraries** contains functionality that is bound to a program statically at compile time.
@@ -143,3 +145,13 @@ Above commands do:
 * Create object file of library B;
 * Create dynamic libraries from these library object file;
 * Create executable file and link with two external dynamic library `A` and `B`.
+
+**Note:** One of the most significant thing is option PIC (position independent code). This option instructs to generate valid address of the extern methods when calls take place.
+
+## Replacement
+
+To make some method replace and redirect to the specific implementation inside library use `LD_PRELOAD` environment variable. This variable tells the linker to populate the PLT with symbols from this library and skip already loaded symbols from other libraries. Such behaviour is the same when symbols from standard library considered. 
+
+```bash
+$ LD_PRELOAD=/path/to/some.so main.x
+```
