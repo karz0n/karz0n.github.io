@@ -10,7 +10,7 @@ mermaid: true
 
 ```mermaid
 graph LR
-    IN[/code.cpp/]==>PRE[[Preprocess]]-->|code.ii|CMP[[Compile]]-->|code.s|ASM[[ASsemble]]-->|code.o|LNK[[Link]]==>OUT[/code.out/]
+    IN[/code.cpp/]==>PRE[[Preprocess]]-->|code.ii|CMP[[Compile]]-->|code.s|ASM[[Assemble]]-->|code.o|LNK[[Link]]==>OUT[/code.out/]
 ```
 
 Stages:
@@ -141,14 +141,14 @@ For more information about available options follow the [link](https://gcc.gnu.o
 
 Responsibility:
 * Encode instructions written in assembler language into machine code;
-* Compose sections with code and data into binary format (e.g. ELF format) file;
-* Include DWARF (debug) information into binary file (if particular option present).
+* Compose sections with code and data into object file in binary format (e.g. ELF format);
+* Include DWARF (debug) information into object file (if particular option present).
 
 ## Link
 
 Responsibility:
-* Compose object modules into executable file or dynamic library;
-* Resolve inter-modules dependencies;
+* Compose object files into one executable or dynamic library file in binary format (e.g. ELF format);
+* Resolve dependencies between different object files (e.g. extern functions);
 * Checking for undefined reference errors or one definition rule violations.
 
 **Note:** Static library represents archive of object files and doesn't involve linking as process.
