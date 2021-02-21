@@ -42,9 +42,11 @@ $ gem install jekyll bundler
 
 # Configure environment
 
-GitHub pages support only limited number of [plugins](https://pages.github.com/versions/). Thus we can't use plugins which aren't present in this list for building automatically.
+GitHub pages support only limited number of [plugins](https://pages.github.com/versions/). Thus we can't use plugins which aren't present in this list for building automatically but we can use GitHub Actions.
 
-First, we make fork of [jekyll-theme-chirpy](https://github.com/cotes2020/jekyll-theme-chirpy) and clone it to local `TOPDIR` dir.
+1. Fork [jekyll-theme-chirpy](https://github.com/cotes2020/jekyll-theme-chirpy);
+2. Rename fork to `<GitGub-Username>.github.io` (you can use another name);
+3. Clone it to local `TOPDIR` dir.
 
 ~~~ bash
 $ cd <TOPDIR>
@@ -57,9 +59,7 @@ $ bash tools/init.sh
 Edit _blog/source/Gemfile_ file and add PlantUML supporting:
 ~~~
 ...
-# Official Plugins
-group :jekyll_plugins do
-  ...
+group :plugins do
   gem "jekyll-plantuml"
 end
 ...
@@ -67,13 +67,17 @@ end
 
 Edit _blog/source/_config.yml_ file:
 ~~~
-# --------------------------
-
+#--------------------------
+theme: jekyll-theme-chirpy
+timezone: Europe/Kiev
+baseurl: ''
+lang: en-US
+#--------------------------
 title: ZEON
 tagline: Just my notes.
 url: 'https://karz0n.github.io'
 author: Denys Asauliak
-avatar: /assets/img/sample/avatar.png
+
 github:
   username: karz0n
 social:
@@ -82,10 +86,10 @@ social:
   links:
     - https://github.com/karz0n
     - https://www.linkedin.com/in/karz0n
-
-# --------------------------
+#--------------------------
 ...
-timezone: Europe/Kiev
+plugins:
+  - jekyll-plantuml
 ...
 ~~~
 Change other properties on your own. The most important properties are:
@@ -95,6 +99,20 @@ Change other properties on your own. The most important properties are:
 * theme_mode
 
 After, `avatar` propery has been changed don't forget to place particular file.
+
+# Configure deployment
+
+Edit _.github/workflows/pages-deploy.yml_ file:
+~~~
+...
+    steps:
+      - name: Update apt cache
+        run: sudo apt-get update
+
+      - name: Install PlantUML Support
+        run: sudo apt-get install -y graphviz plantuml
+...
+~~~
 
 # Run site locally
 
@@ -107,10 +125,5 @@ $ bash tools/run.sh -r
 
 # Deployment
 
-1. Rename fork to `<GitGub-Username>.github.io` (you can use another name).
-2. Ensure your folder includes:
-* <TOPDIR>/.github/workflows/pages-deploy.yml
-* <TOPDIR>/tools/test.sh
-* <TOPDIR>/tools/deploy.sh
-3. Push any commit to the repository to trigger build workflow. Once the build is complete successfuly, a new remote brach named `gh-pages` will apear.
-4. Configure GitHub pages to use `gh-pages` branch in `Settings → Options → GitHub Pages`.
+1. Push any commit to the repository to trigger build workflow. Once the build is complete successfuly, a new remote brach named `gh-pages` will apear.
+2. Configure GitHub pages to use `gh-pages` branch in `Settings → Options → GitHub Pages`.
